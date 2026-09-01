@@ -1,0 +1,36 @@
+﻿Windows Registry Editor Version 5.00
+
+; --- HARDENING & SECURITY ISOLATION ---
+[HKEY_]
+"VerifiedAndReputablePolicyState"=dword:00000001
+
+[HKEY_]
+"ConsentPromptBehaviorAdmin"=dword:00000005
+"ConsentPromptBehaviorUser"=dword:00000003
+"EnableLUA"=dword:00000001
+"PromptOnSecureDesktop"=dword:00000001
+
+[HKEY_]
+"MitigationOptions"=hex:00,11,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+
+[HKEY_]
+"ProtectionMode"=dword:00000001
+
+[HKEY_]
+"RestrictDriverInstallationToAdministrators"=dword:00000001
+
+; --- AGGRESSIVE TELEMETRY BLOCKING & PRIVACY ---
+[HKEY_]
+"AllowTelemetry"=dword:00000000
+"MaxTelemetryAllowed"=dword:00000000
+
+[HKEY_]
+"Disabled"=dword:00000001
+
+[HKEY_]
+"DisableUAR"=dword:00000001
+
+[HKEY_]
+"AllowSearchToUseLocation"=dword:00000000
+"ConnectedSearchUseWeb"=dword:00000000
+"DisableWebSearch"=dword:00000001
