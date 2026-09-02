@@ -1,4 +1,4 @@
-﻿# Windows 11 Hardening & Isolation Baseline (NTLite)
+﻿# Windows 11 Hardening & Isolation Baseline for Client Endpoints + (NTLite fileStructure-Planned)
 
 A granular, modular infrastructure baseline configured specifically to strip tracking systems and establish hardware exploit mitigation without breaking primary production tools.
 
