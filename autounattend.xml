@@ -157,7 +157,7 @@
                             'Warning'
                         ) | Out-Null
 
-                        $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -Command &quot;[System.Reflection.Assembly]::LoadWithPartialName(‘’PresentationFramework‘’); [System.Windows.MessageBox]::Show(‘’Warning: This is a privileged account. Changes made while signed in may affect all users and system security.`n`nAdministrative access only. Use this account only when required for approved system maintenance.`n`nDo not use this account for email, web browsing, or routine work.’’, ‘’Moosehead Studio - High Privilege Security Warning’’, ‘’OK’’, ‘’Warning’’)&quot;'
+                        $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -Command &quot;[System.Reflection.Assembly]::LoadWithPartialName(''PresentationFramework''); [System.Windows.MessageBox]::Show(''Warning: This is a privileged account. Changes made while signed in may affect all users and system security.`n`nAdministrative access only. Use this account only when required for approved system maintenance.`n`nDo not use this account for email, web browsing, or routine work.'', ''Moosehead Studio - High Privilege Security Warning'', ''OK'', ''Warning'')&quot;'
                         $trigger = New-ScheduledTaskTrigger -AtLogOn -User 'Administrator'
                         $settings = New-ScheduledTaskSettingsOption -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
                         Register-ScheduledTask -TaskName 'AdminLoginSecurityWarning' -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null
