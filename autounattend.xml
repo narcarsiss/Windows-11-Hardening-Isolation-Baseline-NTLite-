@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+@file autounattend.xml
+@brief Hardened Windows 11 Endpoint Isolation & Enterprise Baseline
+@param SystemLocale Region set to Australia (en-AU)
+@param UserLocale Time format configured for DD/MM/YYYY (en-AU)
+@return Fully configured unattended Windows 11 installation without initialization race conditions
+-->
 <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
-    <!-- Pass 1: windowsPE - Setup, Partitioning, and Product Key Injection -->
     <settings pass="windowsPE">
         <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <SetupUILanguage>
                 <UILanguage>en-US</UILanguage>
             </SetupUILanguage>
             <InputLocale>0409:00000409</InputLocale>
-            <SystemLocale>en-US</SystemLocale>
-            <UserLocale>en-US</UserLocale>
+            <SystemLocale>en-AU</SystemLocale>
+            <UserLocale>en-AU</UserLocale>
         </component>
         <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <UserData>
@@ -22,10 +28,9 @@
         </component>
     </settings>
 
-    <!-- Pass 4: specialize - Random Computer Name, Gamebar Neutralization -->
     <settings pass="specialize">
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <ComputerName></ComputerName>
+            <ComputerName>*</ComputerName>
             <TimeZone>UTC</TimeZone>
             <RegisteredOwner>Moosehead Studio</RegisteredOwner>
             <RegisteredOrganization>Moosehead Studio</RegisteredOrganization>
@@ -34,21 +39,68 @@
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>1</Order>
-                    <Path>powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$randName = 'WIN-' + (-join ((65..90) + (48..57) | Get-Random -Count 6 | ForEach-Object { [char]$_ })); Rename-Computer -NewName $randName -Force;"</Path>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f >nul 2>&amp;1</Path>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebar" /v "(Default)" /t REG_SZ /d "URL:ms-gamebar" /f 1&gt;nul 2&gt;nul</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>3</Order>
-                    <Path>cmd.exe /c reg add "HKLM\SYSTEM\CurrentControlSet\Services\xbgm" /v "Start" /t REG_DWORD /d "4" /f >nul 2>&amp;1</Path>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>4</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebar\shell\open\command" /ve /t REG_SZ /d "%SystemRoot%\System32\systray.exe" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>5</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>6</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebarservices" /v "(Default)" /t REG_SZ /d "URL:ms-gamebarservices" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>7</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>8</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamebarservices\shell\open\command" /ve /t REG_SZ /d "%SystemRoot%\System32\systray.exe" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>9</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>10</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamingoverlay" /v "(Default)" /t REG_SZ /d "URL:ms-gamingoverlay" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>11</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>12</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Classes\ms-gamingoverlay\shell\open\command" /ve /t REG_SZ /d "%SystemRoot%\System32\systray.exe" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>13</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Microsoft\WindowsRuntime\Server\Windows.Gaming.GameBar.Internal.PresenceWriterServer" /v "ExePath" /t REG_SZ /d "%SystemRoot%\System32\systray.exe" /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>14</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SOFTWARE\Microsoft\WindowsRuntime\ActivatableClassId\Windows.Gaming.GameBar.PresenceServer.Internal.PresenceWriter" /v ActivationType /t REG_DWORD /d 0 /f 1&gt;nul 2&gt;nul</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>15</Order>
+                    <Path>cmd.exe /c reg add "HKLM\SYSTEM\CurrentControlSet\Services\xbgm" /v "Start" /t REG_DWORD /d 4 /f 1&gt;nul 2&gt;nul</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
         </component>
     </settings>
 
-    <!-- Pass 7: oobeSystem - Account Provisioning, OEM Branding & Hardening -->
     <settings pass="oobeSystem">
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <OOBE>
@@ -66,7 +118,7 @@
                 <Username>Administrator</Username>
                 <LogonCount>1</LogonCount>
                 <Password>
-                    <Value></Value>
+                    <Value>AdminSecurePass2026!</Value>
                     <PlainText>true</PlainText>
                 </Password>
             </AutoLogon>
@@ -94,20 +146,157 @@
                 <SynchronousCommand wcm:action="add">
                     <Order>1</Order>
                     <CommandLine>powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "&amp; {
-                        Add-Type -AssemblyName PresentationFramework;
-                        [System.Windows.MessageBox]::Show('SECURITY WARNING: Default credentials detected. Update passwords before production use!', 'Moosehead Studio', 'OK', 'Warning') | Out-Null;
+                        $defaultAdminPass = 'AdminSecurePass2026!'
+                        $defaultOpPass    = 'OperatorSecurePass2026!'
+                        
+                        [System.Reflection.Assembly]::LoadWithPartialName('PresentationFramework') | Out-Null
+                        [System.Windows.MessageBox]::Show(
+                            'SECURITY WARNING: This endpoint was deployed using default template passwords (AdminSecurePass2026! / OperatorSecurePass2026!). Please update them immediately before production use!',
+                            'Moosehead Studio - Default Credentials Detected',
+                            'OK',
+                            'Warning'
+                        ) | Out-Null
+
+                        $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -Command &quot;[System.Reflection.Assembly]::LoadWithPartialName(‘’PresentationFramework‘’); [System.Windows.MessageBox]::Show(‘’Warning: This is a privileged account. Changes made while signed in may affect all users and system security.`n`nAdministrative access only. Use this account only when required for approved system maintenance.`n`nDo not use this account for email, web browsing, or routine work.’’, ‘’Moosehead Studio - High Privilege Security Warning’’, ‘’OK’’, ‘’Warning’’)&quot;'
+                        $trigger = New-ScheduledTaskTrigger -AtLogOn -User 'Administrator'
+                        $settings = New-ScheduledTaskSettingsOption -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+                        Register-ScheduledTask -TaskName 'AdminLoginSecurityWarning' -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null
 
                         $oemPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation';
                         New-Item -Path $oemPath -Force | Out-Null;
                         Set-ItemProperty -Path $oemPath -Name 'Manufacturer' -Value 'Moosehead Studio' -Force;
                         Set-ItemProperty -Path $oemPath -Name 'Model' -Value 'Hardened Windows 11 Endpoint' -Force;
                         Set-ItemProperty -Path $oemPath -Name 'SupportURL' -Value 'https://github.com/narcarsiss/Windows-11-Hardening-Isolation-Baseline-NTLite-' -Force;
+                        Set-ItemProperty -Path $oemPath -Name 'Appreciation' -Value 'Thank you for using our security endpoint config' -Force;
 
-                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent' /v 'DisableWindowsConsumerFeatures' /t REG_DWORD /d '1' /f *&gt; $null;
-                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection' /v 'AllowTelemetry' /t REG_DWORD /d '0' /f *&gt; $null;
+                        reg add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' /v 'OemPreInstalledAppsEnabled' /t REG_DWORD /d '0' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent' /v 'DisableWindowsConsumerFeatures' /t REG_DWORD /d '1' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Start' /v 'ConfigureStartPins' /t REG_SZ /d '{\&quot;pinnedList\&quot;: [{}]}' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent' /v 'DisableConsumerAccountStateContent' /t REG_DWORD /d '1' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent' /v 'DisableCloudOptimizedContent' /t REG_DWORD /d '1' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' /v 'EnableFeeds' /t REG_DWORD /d '0' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search' /v 'AllowCortana' /t REG_DWORD /d '0' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Teams' /v 'DisableInstallation' /t REG_DWORD /d '1' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection' /v 'AllowTelemetry' /t REG_DWORD /d '0' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice' /v 'Start' /t REG_DWORD /d '4' /f 2&gt;&amp;1 | Out-Null;
+                        New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice' -Name 'AllowFindMyDevice' -Value 0 -Force;
+
+                        New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching' -Name 'DontSearchWindowsUpdate' -Value 0 -Force;
+                        New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions' -Name 'PreventDeviceMetadataFromNetwork' -Value 1 -Force;
+
+                        reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR' /v 'AllowGameDVR' /t REG_DWORD /d '0' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SYSTEM\CurrentControlSet\Services\BcastDVRUserService' /v 'Start' /t REG_DWORD /d '4' /f 2&gt;&amp;1 | Out-Null;
+                        reg add 'HKLM\SYSTEM\CurrentControlSet\Services\GameBarPresenceWriter' /v 'Start' /t REG_DWORD /d '4' /f 2&gt;&amp;1 | Out-Null;
+
+                        $defaultUserHive = 'C:\Users\Default\NTUSER.DAT'
+                        if (Test-Path $defaultUserHive) {
+                            reg load 'HKU\DefaultUser' $defaultUserHive 2&gt;&amp;1 | Out-Null
+                            
+                            New-Item -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'TaskbarGlomLevel' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'TaskbarDa' -Value 1 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'LastActiveClick' -Value 1 -Force
+
+                            New-Item -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Search' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'SearchboxTaskbarMode' -Value 0 -Force
+                            New-Item -Path 'Registry::HKU\DefaultUser\Control Panel\NotifyIconSettings' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Control Panel\NotifyIconSettings' -Name 'EnableAutoTray' -Value 0 -Force
+
+                            New-Item -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel' -Name '{645FF040-5081-101B-9F08-00AA002F954E}' -Value 0 -Force
+
+                            New-Item -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'PreInstalledAppsEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SilentInstalledAppsEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContentEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'ContentDeliveryAllowed' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'PreInstalledAppsEverEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SoftLandingEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SystemPaneSuggestionsEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'RotatingLockScreenEnabled' -Value 0 -Force
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContent-338388Enabled' -Value 0 -Force
+
+                            New-Item -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\GameDVR' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\GameDVR' -Name 'AppCaptureEnabled' -Value 0 -Force
+                            New-Item -Path 'Registry::HKU\DefaultUser\System\GameConfigStore' -Force | Out-Null
+                            Set-ItemProperty -Path 'Registry::HKU\DefaultUser\System\GameConfigStore' -Name 'GameDVR_Enabled' -Value 0 -Force
+
+                            [GC]::Collect()
+                            [GC]::WaitForPendingFinalizers()
+                            reg unload 'HKU\DefaultUser' 2&gt;&amp;1 | Out-Null
+                        }
+
+                        Get-NetConnectionProfile | Set-NetConnectionProfile -NetworkCategory Private -ErrorAction SilentlyContinue;
+                        netsh int tcp set global autotuninglevel=normal 1&gt;nul 2&gt;nul;
+                        netsh int tcp set global rss=enabled 1&gt;nul 2&gt;nul;
+                        powercfg -s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 1&gt;nul 2&gt;nul;
+                        powercfg -change -monitor-timeout-ac 30 1&gt;nul 2&gt;nul;
+                        powercfg -change -monitor-timeout-dc 30 1&gt;nul 2&gt;nul;
                         
+                        powercfg -setacvalueindex SCHEME_CURRENT SUB_BUTTONS PBTNACT 2 1&gt;nul 2&gt;nul;
+                        powercfg -setdcvalueindex SCHEME_CURRENT SUB_BUTTONS PBTNACT 2 1&gt;nul 2&gt;nul;
+                        powercfg -setacvalueindex SCHEME_CURRENT SUB_BUTTONS SBTNACT 1 1&gt;nul 2&gt;nul;
+                        powercfg -setdcvalueindex SCHEME_CURRENT SUB_BUTTONS SBTNACT 1 1&gt;nul 2&gt;nul;
+                        powercfg -SetActive SCHEME_CURRENT 1&gt;nul 2&gt;nul;
+
+                        Set-ItemProperty -Path 'HKCU:\Control Panel\Accessibility\StickyKeys' -Name 'Flags' -Value '506' -Force;
+                        Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Multimedia\Audio' -Name 'DisableSpatial' -Value 1 -Force -ErrorAction SilentlyContinue;
+                        New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\BitLocker' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\BitLocker' -Name 'PreventDeviceEncryption' -Value 1 -Force;
+                        Set-Service -Name 'StorSvc' -StartupType Automatic -ErrorAction SilentlyContinue;
+                        Start-Service -Name 'StorSvc' -ErrorAction SilentlyContinue;
+
+                        $edgePolicyPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge';
+                        New-Item -Path $edgePolicyPath -Force | Out-Null;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'ParallelDownloadingEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'GpuRasterizationEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'Accelerated2dCanvasEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'BackForwardCacheEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'ShowRecommendationsEnabled' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'SpotlightExperienceEnabled' -Value 0 -Force;
+                        
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'SleepingTabsEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'SleepingTabsTimeout' -Value 300 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'AutoDiscardSleepingTabsEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'SmartScreenEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'PreventSmartScreenPromptOverride' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'PreventSmartScreenPromptOverrideForFiles' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'PerformanceDetectorEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'ExtensionsPerformanceDetectorEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'RAMResourceControlsEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'EfficiencyModeEnabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'AIGenThemesEnabled' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'EdgeThemeEnabled' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'AllowGamesMenu' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'AllowSurfGame' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'HubsSidebarEnabled' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'EdgeOpenInSidebarEnabled' -Value 0 -Force;
+                        Set-ItemProperty -Path $edgePolicyPath -Name 'EdgeShoppingAssistantEnabled' -Value 0 -Force;
+
+                        $bravePolicyPath = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave';
+                        New-Item -Path $bravePolicyPath -Force | Out-Null;
+                        Set-ItemProperty -Path $bravePolicyPath -Name 'BraveWalletDisabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $bravePolicyPath -Name 'BraveRewardsDisabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $bravePolicyPath -Name 'BraveVpnDisabled' -Value 1 -Force;
+                        Set-ItemProperty -Path $bravePolicyPath -Name 'AIInteractionsEnabled' -Value 0 -Force;
+
                         Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' -Name 'RunAsPPL' -Value 1 -Force;
-                        Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'EnableSmartScreen' -Value 2 -Force;
+
+                        New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1 -Force;
+                        
+                        New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1 -Force;
+                        
+                        New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity' -Force | Out-Null;
+                        Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity' -Name 'Enabled' -Value 1 -Force;
+
+                        Set-MpPreference -EnableControlledFolderAccess Enabled -AttackSurfaceReductionRules_Ids 'BE9BA2D9-53EA-4CDC-84e5-9b1eeee46550', '9e6c4e1f-7d60-472f-ba1a-a39af6b9414d' -AttackSurfaceReductionRules_Actions Enabled -ErrorAction SilentlyContinue;
                     }"</CommandLine>
                 </SynchronousCommand>
             </FirstLogonCommands>
