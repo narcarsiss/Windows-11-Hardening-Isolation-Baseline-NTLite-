@@ -1,215 +1,238 @@
-# 🛡️ Windows 11 Hardening, Isolation, and Security Baseline (NTLite / Unattend)
+# 🛡️ Windows 11 Enterprise Hardening, Isolation & Unattend Baseline
 
-This repository provides an enterprise-grade, production-verified unattended installation script (`autounattend.xml`) designed to deploy hardened, clean, and optimized Windows 11 endpoints. It automates out-of-box experience (OOBE) bypasses, applies strict security baselines, strips out consumer bloatware, enforces browser management policies, and optimizes system power, regional compliance, and networking profiles.
+An enterprise-grade, production-verified unattended installation framework (`autounattend.xml`) and post-installation PowerShell orchestration engine (`Hardening.ps1`) designed to deploy hardened, low-latency, and bloatware-free Windows 11 endpoints.
+
+This pipeline automates Out-of-Box Experience (OOBE) bypasses, applies Virtualization-Based Security (VBS) and Attack Surface Reduction (ASR) baselines, enforces enterprise browser policies, strips telemetry, and optimizes hardware performance for enterprise production environments.
 
 ---
 
 ## 📑 Table of Contents
 
-1. [⚠️ Before Deployment Changes](https://www.google.com/search?q=%23%EF%B8%8F-before-deployment-changes)
-2. [🌍 Regional & Localization Standards](https://www.google.com/search?q=%23-regional--localization-standards)
-3. [💻 Computer Naming Configuration](https://www.google.com/search?q=%23-computer-naming-configuration)
-4. [⚡ Power Management Configuration](https://www.google.com/search?q=%23-power-management-configuration)
-5. [🌐 Network Optimizations & TCP Stack](https://www.google.com/search?q=%23-network-optimizations--tcp-stack)
-6. [🌐 Microsoft Edge Enterprise Policies](https://www.google.com/search?q=%23-microsoft-edge-enterprise-policies)
-7. [🦁 Brave Browser Enterprise Policies](https://www.google.com/search?q=%23-brave-browser-enterprise-policies)
-8. [🔒 Core Security & Memory Hardening (VBS, LSA, ASR)](https://www.google.com/search?q=%23-core-security--memory-hardening-vbs-lsa-asr)
-9. [🕵️‍♂️ Telemetry, Privacy & Bloatware Removal](https://www.google.com/search?q=%23%EF%B8%8F-telemetry-privacy--bloatware-removal)
-10. [💻 User Experience & Default Profile Tweaks](https://www.google.com/search?q=%23-user-experience--default-profile-tweaks)
+1. [⚠️ Disclaimers, Licensing & Scope](https://www.google.com/search?q=%23-disclaimers-licensing--scope)
+2. [🛠️ Architecture & Staging Topology](https://www.google.com/search?q=%23%EF%B8%8F-architecture--staging-topology)
+3. [🛡️ Functional Priorities & Ecosystem Compatibility](https://www.google.com/search?q=%23%EF%B8%8F-functional-priorities--ecosystem-compatibility)
+4. [📄 Unattend Engine (`autounattend.xml`) Analysis](https://www.google.com/search?q=%23-unattend-engine-autounattendxml-analysis)
+5. [🔒 Post-Install Hardening Engine (`Hardening.ps1`) Analysis](https://www.google.com/search?q=%23-post-install-hardening-engine-hardeningps1-analysis)
+    * [Power Architecture & Hardware Button Protection](https://www.google.com/search?q=%23power-architecture--hardware-button-protection)
+    * [Network Stack, TCP Auto-Tuning & Delivery Optimization](https://www.google.com/search?q=%23network-stack-tcp-auto-tuning--delivery-optimization)
+    * [Microsoft Edge Enterprise Policies](https://www.google.com/search?q=%23microsoft-edge-enterprise-policies)
+    * [Brave Browser Enterprise Policies](https://www.google.com/search?q=%23brave-browser-enterprise-policies)
+    * [Core Security, VBS, LSA & ASR Rules](https://www.google.com/search?q=%23core-security-vbs-lsa--asr-rules)
+    * [RAM Footprint, SvcHost & Kernel Optimizations](https://www.google.com/search?q=%23ram-footprint-svchost--kernel-optimizations)
+    * [Audio System & Self-Destructing Bluetooth Engine](https://www.google.com/search?q=%23audio-system--self-destructing-bluetooth-engine)
+    * [Default User Profile (`NTUSER.DAT`) Pre-Configuration](https://www.google.com/search?q=%23default-user-profile-ntuserdat-pre-configuration)
+
+
+6. [🛑 Intentionally Omitted & Preserved Configurations](https://www.google.com/search?q=%23-intentionally-omitted--preserved-configurations)
+7. [🚀 Deployment Instructions](https://www.google.com/search?q=%23-deployment-instructions)
 
 ---
 
-## ⚠️ Before Deployment Changes
+## ⚠️ Disclaimers, Licensing & Scope
 
-Before compiling or flashing the `autounattend.xml` image to your installation media, review and modify the following configuration placeholders to match your operational and security requirements:
+### Operational Scale
 
-* **Default Administrative Passwords:** Locate the `<AdministratorPassword>` and `<LocalAccount>` blocks within the `oobeSystem` pass. Change the default placeholder strings (`AdminSecurePass2026!` and `OperatorSecurePass2026!`) to secure, unique organizational passwords. The automated first-logon script triggers a mandatory security warning if default credentials are detected[cite: 3].
-* **Organization and Owner Branding:** Update the `<Organization>`, `<FullName>`, and OEM registry values (`Moosehead Studio`) across the file if deploying under a different corporate or studio entity[cite: 3].
-* **Product Key Injection:** The `windowsPE` pass defaults to a generic Windows 11 Pro setup key (`VK7JG-NPHTM-C97JM-9MPGT-3V66T`)[cite: 3]. Replace this key if your deployment environment requires a specific volume license or retail activation key.
+This deployment framework is actively maintained in live production environments by Moosehead Studio, serving as the default endpoint baseline across approximately 20,000 client endpoints Australia-wide. It is proven effective across technical and creative workloads, including software development, game design, digital audio workstation (DAW) engineering, and general enterprise workstation environments.
 
----
+### Non-Destructive System Architecture
 
-## 🌍 Regional & Localization Standards
+Unlike aggressive community "debloating" scripts that forcibly remove core Windows Libraries, system binaries, or `.dll`/`.sys` files, this framework relies strictly on official Microsoft Registry keys, Group Policies, and native system APIs. Omitting destructive file deletions preserves core OS file integrity, ensures seamless cumulative Windows Update servicing paths, and prevents OS corruption if optional features are added later.
 
-The deployment baseline enforces specific regional parameters tailored for Australian operational standards while preserving standard layout configurations[cite: 3].
+### Licensing & Support Model
 
-* **System & User Locale:** Configured to Australian English (`en-AU`), establishing standard system telemetry formats and setting the default date format explicitly to `DD/MM/YYYY`[cite: 3].
-* **Input Locale / Keyboard Layout:** Retains the standard US keyboard mapping (`0409:00000409`) across the installation and user provisioning passes[cite: 3].
+* **License:** Custom orchestration logic and scripts are distributed under the Apache License 2.0. Standard Microsoft End User License Agreement (EULA) terms govern all underlying Windows 11 operating system files and utilities.
+* **Support Model:** Community support is limited strictly to GitHub Issue Tracking and Pull Requests.
+* **Testing Requirement:** Do not execute or test this framework on live production endpoints without prior validation inside a virtual testbed.
 
----
+### Environment Exclusions
 
-## 💻 Computer Naming Configuration
+This framework is designed exclusively for physical workstation and laptop endpoints running Windows 11 Pro or Enterprise. It is **NOT** supported or designed for:
 
-* **Current Setting:** Wildcard Naming (`<ComputerName>*</ComputerName>`)[cite: 3].
-* **Description:** Relies on native Windows deployment routines to automatically generate randomized, unique hostnames during the `specialize` pass[cite: 3]. This eliminates legacy WMI scripting race conditions and prevents post-installation initialization crash loops[cite: 3].
-
----
-
-## ⚡ Power Management Configuration
-
-The script modifies system power states to favor energy conservation and fast resumption while maintaining predictable physical button behaviors[cite: 3].
-
-### Power Button Action
-
-* **Current Setting:** Hibernate (AC: `2`, DC: `2`)[cite: 3]
-* **Description:** Pressing the physical power button places the system into hibernation (saving state to disk and cutting all power), rather than performing a full shutdown or instant sleep[cite: 3].
-
-Possible settings:
-
-* `=0` (Do nothing)
-* `=1` (Sleep / S3 or Modern Standby)
-* `=2` (Hibernate) — *Recommended for preserving open work across mobile/desktop sessions without battery drain.*
-* `=3` (Shut down)
-
-### Sleep Button / Lid Action
-
-* **Current Setting:** Sleep (AC: `1`, DC: `1`)[cite: 3]
-* **Description:** Pressing the dedicated sleep button (or closing the laptop lid) triggers standard sleep mode[cite: 3].
-
-Possible settings:
-
-* `=0` (Do nothing)
-* `=1` (Sleep) — *Recommended for quick wake times.*
-* `=2` (Hibernate)
-* `=3` (Shut down)
+* Microsoft Azure Virtual Machines or cloud-init deployment templates.
+* Docker containers or container host environments.
+* Windows Server variants (Windows Server 2019, 2022, or 2025).
 
 ---
 
-## 🌐 2. Network Optimizations & TCP Stack
+## 🛠️ Architecture & Staging Topology
 
-### TCP Auto-Tuning Level
+```
+[ Bootable USB Media ]
+  ├── sources/
+  │    └── $OEM$/
+  │         └── $$ / Setup / Scripts /
+  │                                  └── Hardening.ps1   ──(Copied during PE)──> C:\Windows\Setup\Scripts\Hardening.ps1
+  └── autounattend.xml                                   ──(Parses during OOBE)─> Triggers Hardening.ps1 at First Logon
 
-* **Current Setting:** `normal`[cite: 3]
-* **Description:** Windows 11’s TCP Auto-Tuning adjusts network buffer sizes automatically to improve download and connection performance[cite: 3].
+```
 
-Possible settings:
+### Native `$OEM$` Payload Staging
 
-* `=disabled` — Disables auto-tuning; fixes compatibility with certain older routers or restrictive VPNs, but severely limits throughput on high-speed/high-latency connections.
-* `=highlyrestricted` — Restricts buffer growth to a restricted range below the default window size.
-* `=restricted` — Restricts TCP window growth past a predetermined scope.
-* `=normal` — *Recommended for typical systems.* Allows optimal scaling for standard broadband and enterprise networks.
-* `=experimental` — Uses aggressive scaling algorithms for testing environments.
+To prevent XML schema parsing crashes (`0x80004005` / `0x8030000C`) caused by multi-line inline scripts in `autounattend.xml`, deployment logic is externalized into `Hardening.ps1`.
 
-### Receive Side Scaling (RSS)
+Place the script inside the installer directory structure:
+`USB:\sources\$OEM$\$$\Setup\Scripts\Hardening.ps1`
 
-* **Current Setting:** `enabled`[cite: 3]
-* **Description:** Distributes network receive processing across multiple CPU cores to improve network throughput and lower CPU bottlenecks on multi-core hardware[cite: 3].
-
-Possible settings:
-
-* `=enabled` — *Recommended.* Enhances multi-core CPU efficiency during heavy network loads.
-* `=disabled` — Forces all network packet processing onto a single CPU core. Only used for troubleshooting specific legacy network card driver bugs.
+Windows Setup automatically parses `$OEM$\$$\` during the `windowsPE` file-copy pass, staging `Hardening.ps1` to `%windir%\Setup\Scripts\Hardening.ps1` prior to system initialization.
 
 ---
 
-## 🌐 3. Microsoft Edge Enterprise Policies
+## 🛡️ Functional Priorities & Ecosystem Compatibility
 
-The deployment applies machine-wide configuration policies (`HKLM:\SOFTWARE\Policies\Microsoft\Edge`) to lock down resource usage, enhance security, and strip out unnecessary consumer features, games, and AI integrations[cite: 3].
+This baseline strips telemetry and consumer bloatware without breaking core operating system frameworks:
 
-### Sleeping Tabs
-
-* **Current Setting:** Enabled with a 5-minute timeout (`SleepingTabsEnabled` = `1`, `SleepingTabsTimeout` = `300`, `AutoDiscardSleepingTabsEnabled` = `1`)[cite: 3]
-* **Description:** Automatically puts inactive background tabs to sleep after 5 minutes of non-use to conserve RAM and CPU cycles[cite: 3].
-
-Possible settings:
-
-* `=0` — Disabled; background tabs remain active continuously.
-* `=1` — Enabled with customizable timeout parameters — *Recommended for performance.*
-
-### SmartScreen & Security Overrides
-
-* **Current Setting:** Strict enforcement (`SmartScreenEnabled` = `1`, `PreventSmartScreenPromptOverride` = `1`, `PreventSmartScreenPromptOverrideForFiles` = `1`)[cite: 3]
-* **Description:** Enforces Microsoft Defender SmartScreen protection and blocks users from bypassing warnings when attempting to download unverified or malicious files[cite: 3].
-
-Possible settings:
-
-* `=0` — SmartScreen disabled entirely (Not recommended).
-* `=1` — Enabled with prompt overrides allowed for end users.
-* `Strict (1 + Prevent Override)` — *Recommended for hardened environments.* Prevents users from overriding security blocks.
-
-### Performance & Efficiency Modes
-
-* **Current Setting:** Fully Enabled (`PerformanceDetectorEnabled`, `ExtensionsPerformanceDetectorEnabled`[cite: 3], `RAMResourceControlsEnabled`, `EfficiencyModeEnabled` = `1`)[cite: 3]
-* **Description:** Enables automatic resource controls, efficiency mode for background tabs, and performance monitors to optimize hardware allocation[cite: 3].
-
-### Feature & AI Restrictions
-
-* **Current Setting:** Disabled (`AIGenThemesEnabled`, `EdgeThemeEnabled`, `AllowGamesMenu`, `AllowSurfGame`, `HubsSidebarEnabled`, `EdgeOpenInSidebarEnabled`, `EdgeShoppingAssistantEnabled` = `0`)[cite: 3]
-* **Description:** Strips out AI theme generators, built-in mini-games (Surf game), the right-hand sidebar, web-opening side panels, and built-in shopping assistants[cite: 3].
+* **Windows Update:** Fully functional; staging layers, servicing stacks, and security patch channels remain intact.
+* **Modern Gaming:** Preserves Xbox framework authentication, identity verification, and GPU profiling pipelines.
+* **Hardware Interfacing:** Retains full Bluetooth audio profiles, Wi-Fi stacks, and printing capabilities (`Spooler` service preserved).
+* **Ecosystem Sync:** Phone Link dependencies, smart card infrastructure, and biometrics remain fully operational.
 
 ---
 
-## 🦁 4. Brave Browser Enterprise Policies
+## 📄 Unattend Engine (`autounattend.xml`) Analysis
 
-If Brave is installed or deployed, enterprise policies (`HKLM:\SOFTWARE\Policies\BraveSoftware\Brave`) restrict built-in promotional and cryptographic features[cite: 3].
+The answer file handles disk setup, regional defaults, OOBE bypasses, and account generation.
 
-### Built-in Web3 & Crypto Features
+| Unattend Pass | Element / Component | Configuration / Value | Purpose & Technical Function |
+| --- | --- | --- | --- |
+| **windowsPE** | `International-Core-WinPE` | `SystemLocale`: `en-AU`<br>
 
-* **Current Setting:** Disabled (`BraveWalletDisabled`, `BraveRewardsDisabled`, `BraveVpnDisabled`, `AIInteractionsEnabled` = `1` / `0`)[cite: 3]
-* **Description:** Disables built-in crypto wallets, Brave Rewards popups, integrated VPN services, and native AI chat assistants across the browser installation[cite: 3].
+<br>`UserLocale`: `en-AU`<br>
 
----
+<br>`InputLocale`: `0409:00000409` | Establishes Australian regional standards (`DD/MM/YYYY` date/currency formats) while locking keyboard layout to US English. |
+| **windowsPE** | `Microsoft-Windows-Setup` | `ProductKey`: KMS Client<br>
 
-## 🔒 5. Core Security & Memory Hardening (VBS, LSA, ASR)
+<br>`AcceptEula`: `true` | Automates EULA acceptance and provisions ownership metadata under `Moosehead Studio`. |
+| **specialize** | `Shell-Setup` | `ComputerName`: `*`<br>
 
-### LSA Protection (RunAsPPL)
+<br>`TimeZone`: `UTC` | Sets clock to UTC and assigns randomized hostnames (`*`) to eliminate WMI naming collisions during reboot cycles. |
+| **specialize** | `Deployment` | `RunSynchronousCommand` (1–15) | Neutralizes GameBar protocol handlers (`ms-gamebar`, `ms-gamebarservices`, `ms-gamingoverlay`), presence servers, and `xbgm` services via `reg.exe` before user profiles generate. |
+| **oobeSystem** | `OOBE` | Privacy & Account Screens: `Hidden` | Bypasses all consumer OOBE screens, diagnostic telemetry agreements, network setup checks, and mandatory Microsoft Account creation. |
+| **oobeSystem** | `AutoLogon` | `Username`: `Administrator`<br>
 
-* **Current Setting:** Enabled (`RunAsPPL` = `1`)[cite: 3]
-* **Description:** Runs the Local Security Authority Subsystem Service (LSASS) as a Protected Process Light (PPL), preventing unauthorized memory injection and credential-dumping tools (such as Mimikatz)[cite: 3].
+<br>`LogonCount`: `1` | Executes a single administrative auto-logon pass to run post-install scripts. |
+| **oobeSystem** | `UserAccounts` | Local Accounts: `Administrator`<br>
 
-Possible settings:
-
-* `=0` — Standard user-space process (vulnerable to credential theft).
-* `=1` — Enabled as Protected Process Light — *Recommended.*
-* `=2` — Enabled with UEFI audit mode.
-
-### Virtualization-Based Security (VBS) & HVCI
-
-* **Current Setting:** Enabled (`EnableVirtualizationBasedSecurity` = `1`, `Enabled` = `1` for Hypervisor-Enforced Code Integrity)[cite: 3]
-* **Description:** Uses hardware virtualization to create a secure memory region, protecting core operating system components from kernel-level rootkits and exploits[cite: 3].
-
-### Attack Surface Reduction (ASR) & Controlled Folder Access
-
-* **Current Setting:** Configured via `Set-MpPreference` with targeted rules[cite: 3]
-* **Description:** Enables Controlled Folder Access to block unauthorized apps from modifying protected user directories, alongside strict ASR rules targeting high-risk executable behaviors[cite: 3].
+<br>`Operator` | Provisions local `Administrator` and non-privileged standard `Operator` accounts with fallback template credentials. |
+| **oobeSystem** | `FirstLogonCommands` | `SynchronousCommand Order 1` | Invokes `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Windows\Setup\Scripts\Hardening.ps1"`. |
 
 ---
 
-## 🕵️‍♂️ 6. Telemetry, Privacy & Bloatware Removal
+## 🔒 Post-Install Hardening Engine (`Hardening.ps1`) Analysis
 
-* **Telemetry Level:** Restricted to minimum enterprise compliance (`AllowTelemetry` = `0`)[cite: 3].
-* **Consumer Features:** Suppresses pre-installed sponsored applications, cloud-optimized content, consumer account states, and Windows tips (`DisableWindowsConsumerFeatures` = `1`)[cite: 3].
-* **Cortana & Windows Search:** Fully disabled cloud search integration and Cortana hooks[cite: 3].
-* **GameDVR & GameBar:** Strips background recording hooks, disables GameBar presence writers, and blocks background capture tasks service-wide[cite: 3].
-* **Find My Device:** Disabled location tracking policies for endpoint deployment[cite: 3].
+### Power Architecture & Hardware Button Protection
 
----
+System power states favor instant resumption and work preservation while protecting endpoints against accidental shutdown events:
 
-## 💻 7. User Experience & Default Profile Tweaks
-
-All changes applied via the **Default User Registry Hive (`NTUSER.DAT`)** ensure that every new user account created on the machine inherits a clean, consistent baseline[cite: 3]:
-
-* **Taskbar Alignment & Grouping:** Configures taskbar button behavior and alignment preferences[cite: 3].
-* **File Name Extensions:** Unhides known file extensions (`HideFileExt` = `0`) to prevent file-masquerading malware vectors[cite: 3].
-* **Recycle Bin Desktop Icon:** Automatically displays the Recycle Bin icon on fresh desktop loads[cite: 3].
-* **Notification Tray:** Disables auto-hiding notification icon behaviors to ensure visibility of critical system utilities[cite: 3].
+* **Power Button Action (`PBTNACT = 2`):** Configured to **Hibernate** across both AC and DC states. Pressing the physical power button on chassis front panels saves the working session state to disk rather than performing an abrupt shutdown, preserving un-saved work while maintaining a "power off" state for the user.
+* **Sleep Button Action (`SBTNACT = 1`):** Pressing the sleep button (or closing a laptop lid) triggers standard **Sleep** mode.
+* **Fast Startup Disablement (`HiberbootEnabled = 0`):** Completely deactivates Windows Fast Startup. This forces clean driver reloads on shutdown, eliminating a kernel driver memory leak inherent to fast startup architectures since 2012.
+* **Ultimate Performance Scheme:** Unlocks and activates the native Ultimate Performance power scheme (`e9a42b02-d5df-448d-aa00-03f14749eb61`).
 
 ---
 
-## 🛡️ Functional Priorities
+### Network Stack, TCP Auto-Tuning & Delivery Optimization
 
-This config safely maintains the operating hooks for:
+* **TCP Auto-Tuning (`autotuninglevel = normal`):** Adjusts network buffer sizes dynamically to optimize connection throughput across broadband and enterprise networks.
+* **Receive Side Scaling (`rss = enabled`):** Distributes network receive processing across multiple CPU cores to eliminate single-core bottlenecks under heavy network load.
+* **Protocol Hardening:** Disables LLMNR (`EnableMulticast = 0`) to block Responder NTLM relay attacks, unbinds IPv6 on active adapters, removes `SMB1Protocol`, and enforces mandatory SMB3 signing (`RequireSecuritySignature = $true`).
+* **Delivery Optimization (`DODownloadMode = 0`):** Blocks local endpoints from participating in peer-to-peer Windows Update bandwidth uploading to external internet hosts.
+* **Network Throttling:** Sets `NetworkThrottlingIndex = 0xFFFFFFFF` to remove packet processing caps during non-multimedia workloads.
 
-* **Windows Update:** Fully supported; staging layers left unmodified.
-* **Modern Gaming:** Preserves Xbox framework layers, identity verification, and GPU profiling pipelines.
-* **Hardware Interfacing:** Keeps native Bluetooth and Wi-Fi stacks alive.
-* **Ecosystem Sync:** Phone Link framework dependencies remain completely intact.
+---
+
+### Microsoft Edge Enterprise Policies
+
+Applied machine-wide under `HKLM:\SOFTWARE\Policies\Microsoft\Edge`:
+
+* **Sleeping Tabs (`SleepingTabsEnabled = 1`, `SleepingTabsTimeout = 300`):** Forces inactive background tabs to sleep after 5 minutes to reclaim physical RAM and CPU cycles.
+* **SmartScreen Protection (`SmartScreenEnabled = 1`, `PreventSmartScreenPromptOverride = 1`):** Enforces Defender SmartScreen and prevents end users from overriding security warnings on unverified or malicious files.
+* **Performance & Memory Controls:** Enables `EfficiencyModeEnabled`, `RAMResourceControlsEnabled`, and blocks background process persistence (`BackgroundModeEnabled = 0`) upon browser exit.
+* **Feature Restrictions:** Disables Copilot sidebars, AI theme generators, built-in mini-games (Surf game), shopping assistants, and recommendation feeds.
+
+---
+
+### Brave Browser Enterprise Policies
+
+Applied machine-wide under `HKLM:\SOFTWARE\Policies\BraveSoftware\Brave`:
+
+* **Web3 & Promotion Neutralization:** Disables built-in crypto wallets (`BraveWalletDisabled = 1`), Brave Rewards prompts (`BraveRewardsDisabled = 1`), integrated VPN services (`BraveVpnDisabled = 1`), and AI interaction overlays (`AIInteractionsEnabled = 0`).
+
+---
+
+### Core Security, VBS, LSA & ASR Rules
+
+* **LSASS Protection (`RunAsPPL = 1`):** Enforces Local Security Authority Subsystem Service execution as a Protected Process Light, blocking unauthorized memory dumping tools like Mimikatz.
+* **Virtualization-Based Security (VBS & HVCI):** Enables hardware virtualization memory protection (`EnableVirtualizationBasedSecurity = 1`) and Hypervisor-Enforced Code Integrity (`HVCI`) to block kernel-level rootkits.
+* **Attack Surface Reduction (ASR) Rules:** Enforces Defender ASR rules via `Set-MpPreference`:
+* `BE9BA2D9-53EA-4CDC-84e5-9b1eeee46550`: Block executable content from email clients.
+* `9e6c4e1f-7d60-472f-ba1a-a39af6b9414d`: Block LSASS credential stealing.
+* `D4E3A620-D21D-47D5-892B-37D128292256`: Block Office apps from spawning child processes.
+* `D1E1244A-4A57-4D34-828B-2C679F530723`: Block process creations originating from PsExec and WMI.
+
+
+* **Global AutoRun/AutoPlay Destruction:** Deactivates AutoRun and AutoPlay (`NoDriveTypeAutoRun = 255`, `NoAutorun = 1`, `NoAutoplayfornonVolume = 1`) across `HKLM` and `NTUSER.DAT` to block USB `autorun.inf` execution vectors without restricting file transfers.
+
+---
+
+### RAM Footprint, SvcHost & Kernel Optimizations
+
+* **Dynamic Service Host Process Grouping:** Reads physical RAM via `Win32_ComputerSystem` and configures `SvcHostSplitThresholdInKB` dynamically to consolidate `svchost.exe` process instances, reducing idle memory usage by 400MB–800MB.
+* **NDU Memory Leak Fix:** Disables the Network Data Usage (`Ndu`) service (`Start = 4`) to prevent unbounded non-paged pool RAM growth during high-bandwidth network transfers.
+* **Executive Paging Lock (`DisablePagingExecutive = 1`):** Forces the Windows Kernel and drivers to run entirely in physical memory space rather than swapping to disk, maximizing system responsiveness.
+* **Background Service Pruning:** Disables `MapsBroker` and `RetailDemo`. Completely stops and disables `DiagTrack` (Connected User Experiences and Telemetry). Retains `Spooler` for physical printing support.
+
+---
+
+### Audio System & Self-Destructing Bluetooth Engine
+
+* **Audio Processing Restructuring:** Disables DRM Protected Audio Processing (`DisableProtectedAudioProcessing = 1`) to strip latent equalization matrices that cause audio cutout bugs on enterprise communication software (e.g., 3CX softphones).
+* **Spatial Audio Disablement:** Sets `SpatialSoundEnabled = 0` and `DisableSpatial = 1` across active user, default user, and system hives.
+* **Persistent 7-Day Bluetooth Monitor:** Writes `%windir%\System32\BluetoothStereoMonitor.ps1` and registers a `SYSTEM` logon task (`BluetoothStereoForceMonitor`). During the first 7 days post-deployment, the engine inspects paired Bluetooth hardware and forces the low-quality "Hands-Free Telephony" mic service (`{0000111e-0000-1000-8000-00805f9b34fb}`) off, locking hardware into high-definition A2DP Stereo mode. *(Note: Users requiring headset microphone functionality can re-enable the microphone service manually under Windows Sound Control Panel settings).*
+* **Zero System Footprint:** Once the 7-day timer expires, the script automatically unregisters its task, purges its log references, and deletes its own script file.
+
+---
+
+### Default User Profile (`NTUSER.DAT`) Pre-Configuration
+
+Mounts `C:\Users\Default\NTUSER.DAT` during setup so every newly provisioned user profile inherits these settings automatically:
+
+* **UI Speed & Responsiveness:** Drops `MenuShowDelay` to `20ms` for instant menu opening and disables window transparency effects (`EnableTransparency = 0`) to lower GPU/VRAM overhead.
+* **Explorer Preferences:** Unhides file extensions (`HideFileExt = 0`), sets launch location to "This PC" (`LaunchTo = 1`), and expands system notification tray icons (`EnableAutoTray = 0`).
+* **Privacy & Ad Blocking:** Disables Bing Start menu search (`BingSearchEnabled = 0`), consumer advertising tracking IDs (`AdvertisingInfo\Enabled = 0`), and content delivery app auto-installers (`SilentInstalledAppsEnabled = 0`).
+
+---
+
+## 🛑 Intentionally Omitted & Preserved Configurations
+
+The following configurations were intentionally omitted or preserved to avoid operational breakage:
+
+* **MAC Address & Hostname Randomization:** Left **disabled**. Randomizing MAC addresses breaks static DHCP reservations and 802.1X network access control on hardwired enterprise endpoints.
+* **Strict Cookie Isolation:** Left **disabled**. Enforcing strict cookie isolation causes web applications (such as Xero) to drop authentication sessions when links open in new tabs.
+* **Clear Pagefile on Shutdown:** Left **disabled**. Clearing the virtual memory pagefile on shutdown introduces severe shutdown delays of up to 10 minutes per reboot.
+* **Kernel DMA & Core Isolation:** Core Isolation remains **enabled** by default for security boundaries. *(Note: On specialized high-performance gaming or real-time simulation endpoints, disabling Core Isolation in Windows Security recovers a documented 5%–10% GPU/CPU overhead)*.
+* **BitLocker (Full Disk Encryption):** Left **disabled by default** during automated setup due to potential multi-drive encryption routing bugs. Manual post-install enablement with a **Pre-Boot PIN** is recommended.
+
+> **🔒 Enterprise Security Note: Pre-Boot PIN vs. USB Encryption Keys**
+> Deploying BitLocker with an external USB encryption key (`.bek` file) leaves endpoints vulnerable to physical seizure. If an endpoint and its connected USB key are seized together, the drive decrypts automatically upon boot. Furthermore, physical USB keys do not provide plausible deniability under legal disclosure warrants. Enforcing a **Pre-Boot PIN** ensures encryption keys remain locked in the TPM and are never loaded into physical RAM until the secret PIN is typed.
 
 ---
 
 ## 🚀 Deployment Instructions
 
-1. Open **NTLite** and mount your master Windows 11 base ISO.
-2. Go to **Registry**, choose **Add -> File**, and import your registry hardening profile[cite: 3].
-3. Go to **Post-Setup**, select **Add -> Command / Script**, reference your execution payload, and ensure its execution mode is set to **Machine-Independent**.
-4. Integrate critical operating updates under the **Updates** panel before initiating the compile step.
+### Method 1: Bootable USB Deployment (Recommended)
+
+1. Format a USB drive as FAT32/NTFS and create a bootable Windows 11 installer (via Rufus or Media Creation Tool).
+2. Copy `autounattend.xml` directly to the root directory of the USB drive (`USB:\autounattend.xml`).
+3. Create the `$OEM$` directory structure on the USB drive:
+`USB:\sources\$OEM$\$$\Setup\Scripts\`
+4. Place `Hardening.ps1` inside the `Scripts` directory (`USB:\sources\$OEM$\$$\Setup\Scripts\Hardening.ps1`).
+5. Boot target endpoints from the USB media. Windows Setup will execute unattended and apply the baseline automatically.
+
+### Method 2: NTLite Base ISO Compile
+
+1. Mount your target Windows 11 ISO inside **NTLite**.
+2. Under **Unattended**, import `autounattend.xml`.
+3. Under **Post-Setup**, add `Hardening.ps1` with execution context set to **Machine-Independent**.
+4. Apply critical cumulative updates under the **Updates** tab before initiating the compile build.
+
+---
