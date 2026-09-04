@@ -8,23 +8,21 @@ This pipeline automates Out-of-Box Experience (OOBE) bypasses, applies Virtualiz
 
 ## 📑 Table of Contents
 
-1. [⚠️ Disclaimers, Licensing & Scope](https://www.google.com/search?q=%23-disclaimers-licensing--scope)
-2. [🛠️ Architecture & Staging Topology](https://www.google.com/search?q=%23%EF%B8%8F-architecture--staging-topology)
-3. [🛡️ Functional Priorities & Ecosystem Compatibility](https://www.google.com/search?q=%23%EF%B8%8F-functional-priorities--ecosystem-compatibility)
-4. [📄 Unattend Engine (`autounattend.xml`) Analysis](https://www.google.com/search?q=%23-unattend-engine-autounattendxml-analysis)
-5. [🔒 Post-Install Hardening Engine (`Hardening.ps1`) Analysis](https://www.google.com/search?q=%23-post-install-hardening-engine-hardeningps1-analysis)
-    * [Power Architecture & Hardware Button Protection](https://www.google.com/search?q=%23power-architecture--hardware-button-protection)
-    * [Network Stack, TCP Auto-Tuning & Delivery Optimization](https://www.google.com/search?q=%23network-stack-tcp-auto-tuning--delivery-optimization)
-    * [Microsoft Edge Enterprise Policies](https://www.google.com/search?q=%23microsoft-edge-enterprise-policies)
-    * [Brave Browser Enterprise Policies](https://www.google.com/search?q=%23brave-browser-enterprise-policies)
-    * [Core Security, VBS, LSA & ASR Rules](https://www.google.com/search?q=%23core-security-vbs-lsa--asr-rules)
-    * [RAM Footprint, SvcHost & Kernel Optimizations](https://www.google.com/search?q=%23ram-footprint-svchost--kernel-optimizations)
-    * [Audio System & Self-Destructing Bluetooth Engine](https://www.google.com/search?q=%23audio-system--self-destructing-bluetooth-engine)
-    * [Default User Profile (`NTUSER.DAT`) Pre-Configuration](https://www.google.com/search?q=%23default-user-profile-ntuserdat-pre-configuration)
-
-
-6. [🛑 Intentionally Omitted & Preserved Configurations](https://www.google.com/search?q=%23-intentionally-omitted--preserved-configurations)
-7. [🚀 Deployment Instructions](https://www.google.com/search?q=%23-deployment-instructions)
+1. [⚠️ Disclaimers, Licensing & Scope](#%EF%B8%8F-disclaimers-licensing--scope)
+2. [🛠️ Architecture & Staging Topology](#%EF%B8%8F-architecture--staging-topology)
+3. [🛡️ Functional Priorities & Ecosystem Compatibility](#%EF%B8%8F-functional-priorities--ecosystem-compatibility)
+4. [📄 Unattend Engine (`autounattend.xml`) Analysis](#-unattend-engine-autounattendxml-analysis)
+5. [🔒 Post-Install Hardening Engine (`Hardening.ps1`) Analysis](#-post-install-hardening-engine-hardeningps1-analysis)
+    * [Power Architecture & Hardware Button Protection](#power-architecture--hardware-button-protection)
+    * [Network Stack, TCP Auto-Tuning & Delivery Optimization](#network-stack-tcp-auto-tuning--delivery-optimization)
+    * [Microsoft Edge Enterprise Policies](#microsoft-edge-enterprise-policies)
+    * [Brave Browser Enterprise Policies](#brave-browser-enterprise-policies)
+    * [Core Security, VBS, LSA & ASR Rules](#core-security-vbs-lsa--asr-rules)
+    * [RAM Footprint, SvcHost & Kernel Optimizations](#ram-footprint-svchost--kernel-optimizations)
+    * [Audio System & Self-Destructing Bluetooth Engine](#audio-system--self-destructing-bluetooth-engine)
+    * [Default User Profile (`NTUSER.DAT`) Pre-Configuration](#default-user-profile-ntuserdat-pre-configuration)
+6. [🛑 Intentionally Omitted & Preserved Configurations](#-intentionally-omitted--preserved-configurations)
+7. [🚀 Deployment Instructions](#-deployment-instructions)
 
 ---
 
@@ -56,14 +54,12 @@ This framework is designed exclusively for physical workstation and laptop endpo
 
 ## 🛠️ Architecture & Staging Topology
 
-```
+```text
 [ Bootable USB Media ]
   ├── sources/
-  │    └── $OEM$/
-  │         └── $$ / Setup / Scripts /
+  │    └── \$OEM\(/   │         └── \)\$ / Setup / Scripts /
   │                                  └── Hardening.ps1   ──(Copied during PE)──> C:\Windows\Setup\Scripts\Hardening.ps1
   └── autounattend.xml                                   ──(Parses during OOBE)─> Triggers Hardening.ps1 at First Logon
-
 ```
 
 ### Native `$OEM$` Payload Staging
@@ -93,27 +89,15 @@ This baseline strips telemetry and consumer bloatware without breaking core oper
 The answer file handles disk setup, regional defaults, OOBE bypasses, and account generation.
 
 | Unattend Pass | Element / Component | Configuration / Value | Purpose & Technical Function |
-| --- | --- | --- | --- |
-| **windowsPE** | `International-Core-WinPE` | `SystemLocale`: `en-AU`<br>
-
-<br>`UserLocale`: `en-AU`<br>
-
-<br>`InputLocale`: `0409:00000409` | Establishes Australian regional standards (`DD/MM/YYYY` date/currency formats) while locking keyboard layout to US English. |
-| **windowsPE** | `Microsoft-Windows-Setup` | `ProductKey`: KMS Client<br>
-
-<br>`AcceptEula`: `true` | Automates EULA acceptance and provisions ownership metadata under `Moosehead Studio`. |
-| **specialize** | `Shell-Setup` | `ComputerName`: `*`<br>
-
-<br>`TimeZone`: `UTC` | Sets clock to UTC and assigns randomized hostnames (`*`) to eliminate WMI naming collisions during reboot cycles. |
-| **specialize** | `Deployment` | `RunSynchronousCommand` (1–15) | Neutralizes GameBar protocol handlers (`ms-gamebar`, `ms-gamebarservices`, `ms-gamingoverlay`), presence servers, and `xbgm` services via `reg.exe` before user profiles generate. |
-| **oobeSystem** | `OOBE` | Privacy & Account Screens: `Hidden` | Bypasses all consumer OOBE screens, diagnostic telemetry agreements, network setup checks, and mandatory Microsoft Account creation. |
-| **oobeSystem** | `AutoLogon` | `Username`: `Administrator`<br>
-
-<br>`LogonCount`: `1` | Executes a single administrative auto-logon pass to run post-install scripts. |
-| **oobeSystem** | `UserAccounts` | Local Accounts: `Administrator`<br>
-
-<br>`Operator` | Provisions local `Administrator` and non-privileged standard `Operator` accounts with fallback template credentials. |
-| **oobeSystem** | `FirstLogonCommands` | `SynchronousCommand Order 1` | Invokes `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Windows\Setup\Scripts\Hardening.ps1"`. |
+| :--- | :--- | :--- | :--- |
+| 📁 **windowsPE** | `International-Core-WinPE` | `SystemLocale: en-AU`<br>`UserLocale: en-AU`<br>`InputLocale: 0409:00000409` | Establishes Australian regional standards (DD/MM/YYYY date/currency formats) while locking keyboard layout to US English. |
+| 📁 **windowsPE** | `Microsoft-Windows-Setup` | `ProductKey: KMS Client`<br>`AcceptEula: true` | Automates EULA acceptance and provisions ownership metadata under Moosehead Studio. |
+| ⚙️ **specialize** | `Shell-Setup` | `ComputerName: *`<br>`TimeZone: UTC` | Sets clock to UTC and assigns randomized hostnames (`*`) to eliminate WMI naming collisions during reboot cycles. |
+| ⚙️ **specialize** | `Deployment` | `RunSynchronousCommand (1–15)` | Neutralizes GameBar protocol handlers (`ms-gamebar`, `ms-gamebarservices`, `ms-gamingoverlay`), presence servers, and xbgm services via `reg.exe` before user profiles generate. |
+| 🖥️ **oobeSystem** | `OOBE` | `Privacy & Account Screens: Hidden` | Bypasses all consumer OOBE screens, diagnostic telemetry agreements, network setup checks, and mandatory Microsoft Account creation. |
+| 🖥️ **oobeSystem** | `AutoLogon` | `Username: Administrator`<br>`LogonCount: 1` | Executes a single administrative auto-logon pass to run post-install scripts. |
+| 🖥️ **oobeSystem** | `UserAccounts` | `Local Accounts: Administrator`<br>`Operator` | Provisions local Administrator and non-privileged standard Operator accounts with fallback template credentials. |
+| 🖥️ **oobeSystem** | `FirstLogonCommands` | `SynchronousCommand Order 1` | Invokes `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Windows\Setup\Scripts\Hardening.ps1"`. |
 
 ---
 
@@ -164,12 +148,10 @@ Applied machine-wide under `HKLM:\SOFTWARE\Policies\BraveSoftware\Brave`:
 * **LSASS Protection (`RunAsPPL = 1`):** Enforces Local Security Authority Subsystem Service execution as a Protected Process Light, blocking unauthorized memory dumping tools like Mimikatz.
 * **Virtualization-Based Security (VBS & HVCI):** Enables hardware virtualization memory protection (`EnableVirtualizationBasedSecurity = 1`) and Hypervisor-Enforced Code Integrity (`HVCI`) to block kernel-level rootkits.
 * **Attack Surface Reduction (ASR) Rules:** Enforces Defender ASR rules via `Set-MpPreference`:
-* `BE9BA2D9-53EA-4CDC-84e5-9b1eeee46550`: Block executable content from email clients.
-* `9e6c4e1f-7d60-472f-ba1a-a39af6b9414d`: Block LSASS credential stealing.
-* `D4E3A620-D21D-47D5-892B-37D128292256`: Block Office apps from spawning child processes.
-* `D1E1244A-4A57-4D34-828B-2C679F530723`: Block process creations originating from PsExec and WMI.
-
-
+  * `BE9BA2D9-53EA-4CDC-84e5-9b1eeee46550`: Block executable content from email clients.
+  * `9e6c4e1f-7d60-472f-ba1a-a39af6b9414d`: Block LSASS credential stealing.
+  * `D4E3A620-D21D-47D5-892B-37D128292256`: Block Office apps from spawning child processes.
+  * `D1E1244A-4A57-4D34-828B-2C679F530723`: Block process creations originating from PsExec and WMI.
 * **Global AutoRun/AutoPlay Destruction:** Deactivates AutoRun and AutoPlay (`NoDriveTypeAutoRun = 255`, `NoAutorun = 1`, `NoAutoplayfornonVolume = 1`) across `HKLM` and `NTUSER.DAT` to block USB `autorun.inf` execution vectors without restricting file transfers.
 
 ---
@@ -224,7 +206,7 @@ The following configurations were intentionally omitted or preserved to avoid op
 1. Format a USB drive as FAT32/NTFS and create a bootable Windows 11 installer (via Rufus or Media Creation Tool).
 2. Copy `autounattend.xml` directly to the root directory of the USB drive (`USB:\autounattend.xml`).
 3. Create the `$OEM$` directory structure on the USB drive:
-`USB:\sources\$OEM$\$$\Setup\Scripts\`
+   `USB:\sources\$OEM$\$$\Setup\Scripts\`
 4. Place `Hardening.ps1` inside the `Scripts` directory (`USB:\sources\$OEM$\$$\Setup\Scripts\Hardening.ps1`).
 5. Boot target endpoints from the USB media. Windows Setup will execute unattended and apply the baseline automatically.
 
